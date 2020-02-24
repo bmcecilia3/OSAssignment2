@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -30,6 +31,19 @@ int main (int argc, char **argv)
     //  For all other commands, check if an executable by that name is in one of the PATH directories
     //   If yes, execute it
     //   If no, print error statement: "<command_name>: Error running command" (do include newline)
+	ifstream infile;
+	string entry;
+	infile.open ("array.txt");
+	int v = 0;
+	while(getline(infile, entry))
+	{
+		if(history[v].compare("") == 0)
+		{
+			history[v] = entry;
+			v = v + 1;
+		}
+	}
+	infile.close();
     int w = 0;
 	while(w == 0)
 	{
@@ -100,6 +114,20 @@ int main (int argc, char **argv)
 		{
 		}
 	}
+	ofstream outfile;
+	outfile.open("array.txt", std::ofstream::out | std::ofstream::trunc);
+	for(int j = 0; j < 128; j++)
+	{
+		if(history[j].compare("") == 0)
+		{
+			j = 129;
+		}
+		else
+		{
+			outfile << history[j] << "\n";
+		}
+	}
+	outfile.close();
     return 0;
 }
 
