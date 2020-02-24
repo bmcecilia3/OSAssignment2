@@ -14,6 +14,7 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
 bool fileExists(std::string full_path, bool *executable);
 
 bool isNumber(string s);
+void leftRotatebyOne(string arr[], int n);
 
 int main (int argc, char **argv)
 {
@@ -44,13 +45,13 @@ int main (int argc, char **argv)
 		}
 	}
 	infile.close();
-    int w = 0;
+	int w = 0;
 	while(w == 0)
 	{
 		string input;
 		std::cout << "osshell> ";
 		getline(cin, input);
-		int place = 0;
+		int place = -1;
 		for(int j = 0; j < 128; j++)
 		{
 			if(history[j].compare("") == 0)
@@ -59,6 +60,11 @@ int main (int argc, char **argv)
 				place = j;
 				j = 129;
 			}
+		}
+		if(place == -1)
+		{
+			leftRotatebyOne(history, 128);
+			history[127] = input;
 		}
 		if(input.find("history") == 0)
 		{
@@ -164,3 +170,14 @@ bool isNumber(string s)
     }
     return true; 
 } //https://www.geeksforgeeks.org/program-check-input-integer-string/
+
+void leftRotatebyOne(string arr[], int n) 
+{ 
+    string temp = arr[0]; 
+    int i;
+    for (i = 0; i < n - 1; i++) 
+    {
+        arr[i] = arr[i + 1]; 
+    }
+    arr[i] = temp; 
+} //https://www.geeksforgeeks.org/array-rotation/
