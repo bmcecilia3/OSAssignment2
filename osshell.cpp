@@ -1,8 +1,13 @@
+// compile: g++ -std=c++11 -o bin/osshell osshell.cpp
 #include <iostream>
 #include <cstdlib>
 #include <string>
 #include <vector>
- 
+
+using namespace std;
+
+string* history = new string[128];
+
 std::vector<std::string> splitString(std::string text, char d);
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list);
 bool fileExists(std::string full_path, bool *executable);
@@ -23,7 +28,64 @@ int main (int argc, char **argv)
     //  For all other commands, check if an executable by that name is in one of the PATH directories
     //   If yes, execute it
     //   If no, print error statement: "<command_name>: Error running command" (do include newline)
-
+    int w = 0;
+	while(w == 0)
+	{
+		string input;
+		std::cout << "osshell> ";
+		getline(cin, input);
+		int j;
+		for(j = 0; j < 128; j++)
+		{
+			if(history[j].compare("") == 0)
+			{
+				history[j] = input;
+				j = 129;
+			}
+		}
+		if(input.find("history") == 0)
+		{
+			if(input.compare("history") == 0)
+			{
+				int k;
+				for(k = 0; k < 127; k++)
+				{
+					if(history[k].compare("") != 0 && history[k+1].compare("") != 0)
+					{
+						std::cout << "\t" << k+1 << ": " << history[k] << std::endl;
+					}
+					else
+					{
+						k = 129;
+					}
+				}
+			}
+			else if(input.compare("history clear") == 0)
+			{
+				int i;
+				for(i = 0; i < 128; i++)
+				{
+					history[i] = "";
+				}
+			}
+			else
+			{
+				string num = input.substr(8);
+				if(!num.empty() && num.find_first_not_of("0123456789") == std::string::npos)
+				{
+					std::cout << "Error: history expects an integer >0 (or 'clear')" << std::endl;
+				}
+			}
+		}
+		else if(input.compare("\n") == 0){}
+		else if(input.compare("exit") == 0)
+		{
+			w = 1;
+		}
+		else
+		{
+		}
+	}
     return 0;
 }
 
