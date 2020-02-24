@@ -12,6 +12,8 @@ std::vector<std::string> splitString(std::string text, char d);
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list);
 bool fileExists(std::string full_path, bool *executable);
 
+bool isNumber(string s);
+
 int main (int argc, char **argv)
 {
     std::string input;
@@ -34,12 +36,13 @@ int main (int argc, char **argv)
 		string input;
 		std::cout << "osshell> ";
 		getline(cin, input);
-		int j;
-		for(j = 0; j < 128; j++)
+		int place = 0;
+		for(int j = 0; j < 128; j++)
 		{
 			if(history[j].compare("") == 0)
 			{
 				history[j] = input;
+				place = j;
 				j = 129;
 			}
 		}
@@ -47,8 +50,7 @@ int main (int argc, char **argv)
 		{
 			if(input.compare("history") == 0)
 			{
-				int k;
-				for(k = 0; k < 127; k++)
+				for(int k = 0; k < 127; k++)
 				{
 					if(history[k].compare("") != 0 && history[k+1].compare("") != 0)
 					{
@@ -62,8 +64,7 @@ int main (int argc, char **argv)
 			}
 			else if(input.compare("history clear") == 0)
 			{
-				int i;
-				for(i = 0; i < 128; i++)
+				for(int i = 0; i < 128; i++)
 				{
 					history[i] = "";
 				}
@@ -71,9 +72,22 @@ int main (int argc, char **argv)
 			else
 			{
 				string num = input.substr(8);
-				if(!num.empty() && num.find_first_not_of("0123456789") == std::string::npos)
+				if(!isNumber(num))
 				{
 					std::cout << "Error: history expects an integer >0 (or 'clear')" << std::endl;
+				}
+				else
+				{
+					int line = place - stoi(num);
+					if(line < 0)
+					{
+						line = 0;
+					}
+					while(line < place)
+					{
+						std::cout << "\t" << line+1 << ": " << history[line] << std::endl;
+						line = line + 1;
+					}
 				}
 			}
 		}
@@ -110,3 +124,15 @@ bool fileExists(std::string full_path, bool *executable)
     *executable = false;
     return false;
 }
+
+bool isNumber(string s) 
+{ 
+    for (int i = 0; i < s.length(); i++) 
+    {
+        if (isdigit(s[i]) == false) 
+        {
+            return false; 
+        }
+    }
+    return true; 
+} //https://www.geeksforgeeks.org/program-check-input-integer-string/
