@@ -4,10 +4,15 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
 
 using namespace std;
 
 string* history = new string[128];
+bool exe;
 
 std::vector<std::string> splitString(std::string text, char d);
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list);
@@ -34,7 +39,7 @@ int main (int argc, char **argv)
     //   If no, print error statement: "<command_name>: Error running command" (do include newline)
 	ifstream infile;
 	string entry;
-	infile.open ("array.txt");
+	infile.open ("src/array.txt");
 	int v = 0;
 	while(getline(infile, entry))
 	{
@@ -45,7 +50,7 @@ int main (int argc, char **argv)
 		}
 	}
 	infile.close();
-	int w = 0;
+    int w = 0;
 	while(w == 0)
 	{
 		string input;
@@ -118,10 +123,40 @@ int main (int argc, char **argv)
 		}
 		else
 		{
+			string fullPath = getFullPath(input.substr(0, input.find_first_of(' ', 0)), os_path_list);
+			if(fullPath.compare("") == 0)
+			{
+				std::cout << input << ": Error running command" << std::endl;
+			}
+			else if(!exe)
+			{
+				std::cout << input << ": File exists but is not executable" << std::endl;
+			}
+			else
+			{
+				std::vector<std::string> full_path_list = splitString(fullPath + " " + input.substr(input.find_first_of(' ', 0) + 1, input.length()), ' ');
+				pid_t pid = fork();
+				pid_t wpid;
+				int status = 0;
+				if(pid == 0)
+				{
+					char *args[full_path_list.size() + 1];
+					for(int z = 0; z < full_path_list.size(); z++)
+					{
+						args[z] = (const_cast<char *>(full_path_list[z].c_str()));
+					}
+					args[full_path_list.size()] = NULL;
+					execv(args[0], &args[0]);
+				}
+				else
+				{
+					while ((wpid = wait(&status)) > 0);
+				}
+			}
 		}
 	}
 	ofstream outfile;
-	outfile.open("array.txt", std::ofstream::out | std::ofstream::trunc);
+	outfile.open("src/array.txt", std::ofstream::out | std::ofstream::trunc);
 	for(int j = 0; j < 128; j++)
 	{
 		if(history[j].compare("") == 0)
@@ -141,13 +176,34 @@ int main (int argc, char **argv)
 std::vector<std::string> splitString(std::string text, char d)
 {
     std::vector<std::string> result;
-
+	int found = text.find_first_of(d,0);
+	string before;
+	string after;
+	before = text.substr(0, found);
+	after = text.substr(found+1, text.length());
+	while(found != std::string::npos)
+	{		
+		result.push_back(before);
+		found = after.find_first_of(d,0);
+		before = after.substr(0, found);
+		after = after.substr(found+1, text.length());
+	}
+	result.push_back(after);
     return result;
 }
 
 // Returns a string for the full path of a command if it is found in PATH, otherwise simply return ""
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list)
 {
+	string full;
+	for(int y = 0; y < os_path_list.size(); y++)
+	{
+		full = os_path_list[y] + "/" + cmd;
+		if(fileExists(full, &exe))
+		{
+			return full;
+		}
+	}
     return "";
 }
 
@@ -155,7 +211,21 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
 // depending on if the user has permission to execute the file
 bool fileExists(std::string full_path, bool *executable)
 {
-    *executable = false;
+	if(access(full_path.c_str(), X_OK) != -1)
+	{
+	    exe = true;
+	}
+	else
+	{
+		exe = false;
+	}	
+	ifstream ifile;
+	ifile.open(full_path);
+	if(ifile)
+	{
+		return true;
+	}
+	else{}
     return false;
 }
 
