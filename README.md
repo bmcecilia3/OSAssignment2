@@ -25,7 +25,7 @@ Create a C++ program, called OSShell, that will serve as a shell interface that 
        
 ### *Additional features*
 
- - If user input does not match a program in the PATH, check if it is a relative or full path to an executable file
+ - If user input does not match a program in the PATH, check if it is a relative or full path to an executable file (NOT IMPLEMENTED)
      - If so, spawn a new process to run that executable, and wait for its completion
  - Allow previous commands stored for the "history"command to persist between runs of OSShell
  - Allow for an optional argument to the "history" command - an integer > 0 or the string 'clear'
